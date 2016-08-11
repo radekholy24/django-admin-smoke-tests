@@ -13,14 +13,14 @@ class FailAdminSiteSmokeTest(AdminSiteSmokeTestMixin, TestCase):
     @for_all_model_admins
     def test_specified_fields(self, model, model_admin):
         with self.assertRaises(ModelAdminCheckException):
-            super().test_specified_fields()
+            super(FailAdminSiteSmokeTest, self).test_specified_fields()
 
     @for_all_model_admins
     def test_changelist_view_search(self, model, model_admin):
         with self.assertRaises(ModelAdminCheckException):
-            super().test_changelist_view_search()
+            super(FailAdminSiteSmokeTest, self).test_changelist_view_search()
 
     @for_all_model_admins
     def test_changelist_view(self, model, model_admin):
         with self.assertRaises(ModelAdminCheckException):
-            super().test_changelist_view()
+            super(FailAdminSiteSmokeTest, self).test_changelist_view()
