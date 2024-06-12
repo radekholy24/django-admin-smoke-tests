@@ -500,10 +500,16 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
         """Additional asserts for search test"""
         if hasattr(model_admin, "search_fields") and len(model_admin.search_fields) > 0:
             autofocus_string = "" if django.VERSION >= (4, 2) else ' autofocus=""'
+            search_helptext_string = (
+                'aria-describedby="searchbar_helptext"'
+                if hasattr(model_admin, "search_help_text") and model_admin.search_help_text
+                else ""
+            )
             self.assertElementContains(
                 response,
                 "input[id=searchbar]",
-                f'<input type="text" size="40" name="q" value="test" id="searchbar" {autofocus_string}>',
+                '<input type="text" size="40" name="q" value="test" id="searchbar" '
+                f'{autofocus_string} {search_helptext_string}>',
             )
 
     @for_all_model_admins
