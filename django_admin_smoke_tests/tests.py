@@ -11,7 +11,7 @@ from django.contrib.admin.utils import quote
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Model
+from django.db.models import Manager, Model
 from django.db.models.fields.files import FieldFile
 from django.http.request import QueryDict
 from django.test import TestCase, override_settings
@@ -50,17 +50,30 @@ def for_all_model_admins(fn):
 
 def form_data(form, instance):
     data = {}
-    for field in form.base_fields:
+    for field_name, field in form.base_fields.items():
         try:
-            value = getattr(instance, field, None)
+            value = getattr(instance, field_name, None)
         except ObjectDoesNotExist:
             value = None
-        if isinstance(value, FieldFile):
-            pass
-        elif isinstance(value, Model):
-            data[field] = value.pk
-        elif value is not None:
-            data[field] = value
+        if isinstance(value, Model):
+            value = value.pk
+        elif isinstance(value, Manager):
+            value = [model.pk for model in value.all()]
+        field_widget_context = field.widget.get_context(field_name, value, {})
+        try:
+            field_subwidgets_contexts = field_widget_context["widget"]["subwidgets"]
+        except KeyError:
+            if isinstance(value, FieldFile):
+                pass
+            elif value is not None:
+                data[field_name] = value
+        else:
+            for field_subwidget_context in field_subwidgets_contexts:
+                field_subwidget_name = field_subwidget_context["name"]
+                field_subwidget_value = field_subwidget_context["value"]
+                data[field_subwidget_name] = (
+                    "" if field_subwidget_value is None else field_subwidget_value
+                )
     return data
 
 
@@ -502,14 +515,15 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
             autofocus_string = "" if django.VERSION >= (4, 2) else ' autofocus=""'
             search_helptext_string = (
                 'aria-describedby="searchbar_helptext"'
-                if hasattr(model_admin, "search_help_text") and model_admin.search_help_text
+                if hasattr(model_admin, "search_help_text")
+                and model_admin.search_help_text
                 else ""
             )
             self.assertElementContains(
                 response,
                 "input[id=searchbar]",
                 '<input type="text" size="40" name="q" value="test" id="searchbar" '
-                f'{autofocus_string} {search_helptext_string}>',
+                f"{autofocus_string} {search_helptext_string}>",
             )
 
     @for_all_model_admins
