@@ -1,6 +1,7 @@
 # This file contain model_bakery field genrators for field types that
 # can be found in various Django apps.
 # TODO: this should be moved to the apps where the field defined.
+import os
 import shutil
 from decimal import Decimal
 
@@ -22,6 +23,11 @@ def gen_avatar():
         "./blenderhub/apps/assets/test_files/test.jpg",
         f"{settings.MEDIA_ROOT}/test_image",
     )
+    # Make it compatible with the remove_avatar_images signal handler.
+    try:
+        os.mkdir(f"{settings.MEDIA_ROOT}/resized")
+    except FileExistsError:
+        pass
     return "test_image"
 
 
