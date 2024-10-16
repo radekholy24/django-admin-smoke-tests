@@ -411,7 +411,14 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
             response = self.client.get(url, follow=True)
 
             self.print_response(response, model, model_admin, "changelist")
-            self.changelist_view_asserts(model, model_admin, response)
+            self.changelist_view_asserts(
+                model,
+                model_admin,
+                response,
+                has_change_permission=model_admin.has_change_permission(
+                    request, obj=None
+                ),
+            )
             return response
 
     def get_site_header(self, response):
@@ -419,7 +426,9 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
             return response.context_data["site_header"]
         return "Django administration"
 
-    def changelist_view_asserts(self, model, model_admin, response):
+    def changelist_view_asserts(
+        self, model, model_admin, response, has_change_permission
+    ):
         self.assertIn(response.status_code, [200])
         header_tag = "div" if django.VERSION >= (5, 0) else "h1"
         self.assertElementContains(
@@ -429,10 +438,13 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
             f"{self.get_site_header(response)}"
             f"</a></{header_tag}>",
         )
+        header_text = (
+            f"Select {model._meta.verbose_name} to change"
+            if has_change_permission
+            else f"Select {model._meta.verbose_name} to view"
+        )
         self.assertElementContains(
-            response,
-            "div[id=content] h1",
-            f"<h1>Select {model._meta.verbose_name} to change</h1>",
+            response, "div[id=content] h1", f"<h1>{header_text}</h1>"
         )
 
     @for_all_model_admins
@@ -473,7 +485,14 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
                     self.print_response(
                         response, model, model_admin, "changelist_filters"
                     )
-                    self.changelist_view_asserts(model, model_admin, response)
+                    self.changelist_view_asserts(
+                        model,
+                        model_admin,
+                        response,
+                        has_change_permission=model_admin.has_change_permission(
+                            request, obj=None
+                        ),
+                    )
 
     @for_all_model_admins
     def test_changelist_view_search(self, model, model_admin):
@@ -492,7 +511,14 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
                 + "?q=test",
                 follow=True,
             )
-            self.changelist_view_asserts(model, model_admin, response)
+            self.changelist_view_asserts(
+                model,
+                model_admin,
+                response,
+                has_change_permission=model_admin.has_change_permission(
+                    request, obj=None
+                ),
+            )
             self.print_response(response, model, model_admin, "changelist_view_search")
             self.changelist_view_search_asserts(model, model_admin, response)
             return response
@@ -620,7 +646,7 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
 
         # Get form and use it to create POST data
         request = self.post_request(model, model_admin)
-        form = model_admin.get_form(request)
+        form = model_admin.get_form(request, change=True)
         self.client.force_login(self.superuser)
         if model_admin.has_change_permission(request):
             url = reverse(
