@@ -10,6 +10,7 @@ from .models import (
     HasPrimarySlug,
     HasPrimaryUUID,
     Post,
+    ReadonlyPost,
 )
 
 
@@ -76,6 +77,11 @@ class PostAdmin(admin.ModelAdmin):
     ]
 
 
+class ReadonlyPostAdmin(admin.ModelAdmin):
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 class FailPostAdmin(admin.ModelAdmin):
     """Admin, that should fail if it is not excluded from the smoke tests"""
 
@@ -101,6 +107,7 @@ class ForbiddenPostAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Post, PostAdmin)
+admin.site.register(ReadonlyPost, ReadonlyPostAdmin)
 admin.site.register(FailPost, FailPostAdmin)
 admin.site.register(ForbiddenPost, ForbiddenPostAdmin)
 
