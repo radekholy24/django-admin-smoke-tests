@@ -421,12 +421,13 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
 
     def changelist_view_asserts(self, model, model_admin, response):
         self.assertIn(response.status_code, [200])
+        header_tag = "div" if django.VERSION >= (5, 0) else "h1"
         self.assertElementContains(
             response,
-            "h1[id=site-name]",
-            f"<h1 id='site-name'><a href='{reverse('admin:index')}'>"
+            "#site-name",
+            f"<{header_tag} id='site-name'><a href='{reverse('admin:index')}'>"
             f"{self.get_site_header(response)}"
-            "</a></h1>",
+            f"</a></{header_tag}>",
         )
         self.assertElementContains(
             response,
@@ -533,12 +534,13 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
 
     def add_view_asserts(self, model, model_admin, response):
         self.assertIn(response.status_code, [200])
+        header_tag = "div" if django.VERSION >= (5, 0) else "h1"
         self.assertElementContains(
             response,
-            "h1[id=site-name]",
-            f"<h1 id='site-name'><a href='{reverse('admin:index')}'>"
+            "#site-name",
+            f"<{header_tag} id='site-name'><a href='{reverse('admin:index')}'>"
             f"{self.get_site_header(response)}"
-            "</a></h1>",
+            f"</a></{header_tag}>",
         )
         self.assertElementContains(
             response,
@@ -578,10 +580,13 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
 
     def change_view_asserts(self, model, model_admin, response, instance):
         self.assertIn(response.status_code, [200])
+        header_tag = "div" if django.VERSION >= (5, 0) else "h1"
         self.assertElementContains(
             response,
-            "h1[id=site-name]",
-            f"<h1 id='site-name'>{self.get_site_h1_content(model, model_admin, response, instance)}</h1>",
+            "#site-name",
+            f"<{header_tag} id='site-name'>"
+            f"{self.get_site_h1_content(model, model_admin, response, instance)}"
+            f"</{header_tag}>",
         )
         self.assertElementContains(
             response,
@@ -638,12 +643,13 @@ class AdminSiteSmokeTestMixin(AssertElementMixin):
 
     def index_page_asserts(self, response):
         self.assertIn(response.status_code, [200])
+        header_tag = "div" if django.VERSION >= (5, 0) else "h1"
         self.assertElementContains(
             response,
-            "h1[id=site-name]",
-            f"<h1 id='site-name'><a href='{reverse('admin:index')}'>"
+            f"{header_tag}[id=site-name]",
+            f"<{header_tag} id='site-name'><a href='{reverse('admin:index')}'>"
             f"{self.get_site_header(response)}"
-            "</a></h1>",
+            f"</a></{header_tag}>",
         )
 
 

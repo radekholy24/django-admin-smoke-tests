@@ -320,10 +320,11 @@ class UnitTestMixin(AssertElementMixin, TestCase):
             "input[id=searchbar]",
             f'<input type="text" size="40" name="q" value="test" id="searchbar" {autofocus_string}>',
         )
+        header_tag = "div" if django.VERSION >= (5, 0) else "h1"
         self.assertElementContains(
             response,
-            "h1[id=site-name]",
-            '<h1 id="site-name"><a href="/admin/">Django administration</a></h1>',
+            f"{header_tag}[id=site-name]",
+            f'<{header_tag} id="site-name"><a href="/admin/">Django administration</a></{header_tag}>',
         )
 
     def test_change_post_func_encode_url(self):
