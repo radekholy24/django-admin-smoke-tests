@@ -6,7 +6,7 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ '**' ]
+    branches: [ 'master' ]
   pull_request:
     branches: [ '**' ]
 
@@ -22,15 +22,18 @@ jobs:
         
     strategy:
       matrix:
-        DJANGO_VERSION: ['2.2.*', '3.0.*', '3.1.*', '3.2.*', '4.0.*', '4.1.*', '4.2.*']
-        PYTHON_VERSION: ['3.7', '3.8', '3.9', '3.10', '3.11']
+        DJANGO_VERSION: ['4.0.*', '4.1.*', '4.2.*', '5.0.*', '5.1.*']
+        PYTHON_VERSION: ['3.8', '3.9', '3.10', '3.11']
         exclude:
-          - DJANGO_VERSION: '4.2.*'
-            PYTHON_VERSION: '3.7'
-          - DJANGO_VERSION: '4.1.*'
-            PYTHON_VERSION: '3.7'
-          - DJANGO_VERSION: '4.0.*'
-            PYTHON_VERSION: '3.7'
+          - DJANGO_VERSION: '5.0.*'
+            PYTHON_VERSION: '3.8'
+          - DJANGO_VERSION: '5.0.*'
+            PYTHON_VERSION: '3.9'
+
+          - DJANGO_VERSION: '5.1.*'
+            PYTHON_VERSION: '3.8'
+          - DJANGO_VERSION: '5.1.*'
+            PYTHON_VERSION: '3.9'
       fail-fast: false
 
     steps:
@@ -47,7 +50,7 @@ jobs:
 
       - name: Install
         run: |
-           pip install -U pip
+           pip install -U pip setuptools
            pip install -U wheel virtualenv
            pip install django_coverage_plugin Django==${{matrix.DJANGO_VERSION}}
            pip install tox coveralls
@@ -59,7 +62,7 @@ jobs:
 
       - name: Upload coverage
         run: |
-          coveralls --service=github
+          coveralls --service=github-actions
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   flake:

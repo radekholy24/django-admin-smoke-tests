@@ -26,15 +26,16 @@ def runtests():
 
 def parse_requirements(file_name):
     requirements = []
-    for line in open(file_name, "r").read().split("\n"):
-        if re.match(r"(\s*#)|(\s*$)", line):
-            continue
-        if re.match(r"\s*-e\s+", line):
-            requirements.append(re.sub(r"\s*-e\s+.*#egg=(.*)$", r"\1", line))
-        elif re.match(r"(\s*git)|(\s*hg)", line):
-            pass
-        else:
-            requirements.append(line)
+    with open(file_name, "r") as file:
+        for line in file.read().split("\n"):
+            if re.match(r"(\s*#)|(\s*$)", line):
+                continue
+            if re.match(r"\s*-e\s+", line):
+                requirements.append(re.sub(r"\s*-e\s+.*#egg=(.*)$", r"\1", line))
+            elif re.match(r"(\s*git)|(\s*hg)", line):
+                pass
+            else:
+                requirements.append(line)
     return requirements
 
 
