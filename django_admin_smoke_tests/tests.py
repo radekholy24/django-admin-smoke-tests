@@ -11,7 +11,6 @@ from django.contrib.admin.utils import quote
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Model
 from django.db.models.fields.files import FieldFile
 from django.http.request import QueryDict
 from django.test import TestCase, override_settings
@@ -50,17 +49,27 @@ def for_all_model_admins(fn):
 
 def form_data(form, instance):
     data = {}
-    for field in form.base_fields:
+    for field in form(instance=instance):
+        widget = field.field.widget
         try:
-            value = getattr(instance, field, None)
-        except ObjectDoesNotExist:
-            value = None
-        if isinstance(value, FieldFile):
-            pass
-        elif isinstance(value, Model):
-            data[field] = value.pk
-        elif value is not None:
-            data[field] = value
+            widget_decompress = widget.decompress
+        except AttributeError:
+            widget_name_value_pairs = [(field.html_name, field.value())]
+        else:
+            widgets_context = widget.get_context(field.html_name, field.value(), {})
+            widget_name_value_pairs = zip(
+                # Perhaps, we could use widget.widgets_names, but it is not documented.
+                (
+                    subwidget_context["name"]
+                    for subwidget_context in widgets_context["widget"]["subwidgets"]
+                ),
+                widget_decompress(field.value()),
+            )
+        data.update(
+            (name, value)
+            for name, value in widget_name_value_pairs
+            if value is not None and not isinstance(value, FieldFile)
+        )
     return data
 
 
