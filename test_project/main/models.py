@@ -125,6 +125,10 @@ class FailPost(AbstractPost):
     pass
 
 
+class ReadonlyPost(AbstractPost):
+    pass
+
+
 class HasPrimarySlug(models.Model):
     slug = models.SlugField(primary_key=True)
     title = models.CharField(max_length=140, unique=True)

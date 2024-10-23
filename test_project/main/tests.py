@@ -22,6 +22,7 @@ from .admin import (
     ForbiddenPostAdmin,
     ListFilter,
     PostAdmin,
+    ReadonlyPostAdmin,
 )
 from .models import (
     Channel,
@@ -32,6 +33,7 @@ from .models import (
     HasPrimaryUUID,
     Post,
     ProxyChannel,
+    ReadonlyPost,
     expected_exception,
 )
 
@@ -43,12 +45,17 @@ class AdminSiteSmokeTest(AdminSiteSmokeTestMixin, TestCase):
     fixtures = []
     exclude_apps = ["auth"]
     exclude_modeladmins = [FailPostAdmin, "ForbiddenPostAdmin"]
-    only_modeladmins = [ChannelAdmin, PostAdmin]
+    only_modeladmins = [ChannelAdmin, PostAdmin, ReadonlyPostAdmin]
 
 
 class FailAdminSiteSmokeTest(AdminSiteSmokeTestMixin, TestCase):
     fixtures = []
-    exclude_modeladmins = [ForbiddenPostAdmin, PostAdmin, "test_project.ChannelAdmin"]
+    exclude_modeladmins = [
+        ForbiddenPostAdmin,
+        PostAdmin,
+        "test_project.ChannelAdmin",
+        ReadonlyPostAdmin,
+    ]
 
     def setUp(self):
         FailPost.objects.create(
@@ -91,7 +98,7 @@ class FailAdminSiteSmokeTest(AdminSiteSmokeTestMixin, TestCase):
 class ForbiddenAdminSiteSmokeTest(AdminSiteSmokeTestMixin, TestCase):
     strict_mode = True
     fixtures = []
-    exclude_modeladmins = [FailPostAdmin, PostAdmin, ChannelAdmin]
+    exclude_modeladmins = [FailPostAdmin, PostAdmin, ChannelAdmin, ReadonlyPostAdmin]
     print_responses = True
 
 
@@ -453,10 +460,18 @@ class UnitTestMixinNoInstances(TestCase):
                 "using only modeladmin ['foo_modeladmin']",
             )
         modeladmins = OnlySmokeTest.get_modeladmins()
-        self.assertEqual(len(modeladmins), 6)
+        self.assertEqual(len(modeladmins), 7)
         print(modeladmins)
         model_list = list(zip(*modeladmins))[0]
         self.assertSetEqual(
             set(model_list),
-            {Channel, Post, FailPost, ForbiddenPost, HasPrimarySlug, HasPrimaryUUID},
+            {
+                Channel,
+                Post,
+                FailPost,
+                ForbiddenPost,
+                HasPrimarySlug,
+                HasPrimaryUUID,
+                ReadonlyPost,
+            },
         )
